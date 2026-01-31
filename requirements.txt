@@ -26,6 +26,9 @@ httpx~=0.28.1
 requests==2.32.5
 aiohttp~=3.11.11
 
+# Templating
+Jinja2>=3.1.0
+
 
 # Async support
 anyio==4.8.0
