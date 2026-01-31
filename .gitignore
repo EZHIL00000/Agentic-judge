@@ -1,0 +1,128 @@
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+*.env
+.envrc
+
+# API Keys and sensitive data
+config/secrets.json
+*.key
+*.pem
+credentials.json
+token.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Logs
+*.log
+logs/
+log/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
+*.bak
+
+# FastAPI/Uvicorn
+*.pid
+
+# LangChain/LangGraph specific
+.chroma/
+chroma_db/
+vectorstore/
+embeddings/
+.langchain/
+
+# Ollama models cache (optional - comment out if you want to track)
+# .ollama/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Build artifacts
+*.pyc
+*.pyo
+*.pyd
+
+# Documentation builds
+docs/_build/
+site/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/

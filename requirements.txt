@@ -1,0 +1,32 @@
+# FastAPI and server dependencies
+fastapi==0.128.0
+uvicorn[standard]==0.38.0
+pydantic==2.12.5
+pydantic-settings==2.7.0
+
+# LangChain core and integrations
+langchain==1.2.7
+langchain-core==1.2.7
+langchain-community==0.3.18
+
+# LangGraph for agentic workflows
+langgraph==1.0.7
+
+# Google Gemini integration
+langchain-google-genai==4.2.0
+google-generativeai==0.8.3
+
+# Ollama integration
+ollama==0.6.1
+
+# Environment variables
+python-dotenv==1.2.1
+
+# Additional utilities
+httpx==0.28.1
+requests==2.32.3
+aiohttp==3.11.11
+
+
+# Async support
+anyio==4.8.0
