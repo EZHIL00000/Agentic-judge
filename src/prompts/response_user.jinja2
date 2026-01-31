@@ -1,0 +1,32 @@
+# ROUND DATA
+
+Generate your commentary based on the following round information:
+
+## Current Round
+- **Round Number**: {{ round_number }} of 5
+- **Game Status**: {% if is_game_over %}FINAL ROUND - GAME OVER{% else %}In Progress{% endif %}
+
+## Moves This Round
+- **User's Original Input**: "{{ user_input }}"
+- **User's Validated Move**: {{ user_move }}
+- **Bot's Move**: {{ bot_move }}
+
+## Validation
+- **Move Status**: {{ validation_status }}
+{% if validation_reason %}- **Validation Details**: {{ validation_reason }}{% endif %}
+
+## Round Outcome
+- **Winner**: {{ round_result }}
+
+## Current Score
+- **User**: {{ user_score }} points
+- **Bot**: {{ bot_score }} points
+
+## Resource Status
+- **User Bomb Available**: {% if user_bomb_used %}NO (already used){% else %}YES{% endif %}
+- **Bot Bomb Available**: {% if bot_bomb_used %}NO (already used){% else %}YES{% endif %}
+
+---
+
+Now generate your round commentary following your instructions.
+Keep it concise{% if is_game_over %} but make the ending feel special{% endif %}.

@@ -46,6 +46,9 @@ def create_llm_node(
         try:
             logger.debug(f"Executing LLM node with output_key: {output_key}")
             
+            # Convert Pydantic state to dict if needed
+            state_dict = state.dict() if hasattr(state, "dict") else state
+            
             # Get the model
             model_manager = get_model_manager()
             llm: BaseChatModel = model_manager.get_model(model_name)
@@ -60,7 +63,7 @@ def create_llm_node(
             prompt = ChatPromptTemplate.from_messages(messages)
             
             # Format with state variables
-            formatted_prompt = prompt.format_messages(**state)
+            formatted_prompt = prompt.format_messages(**state_dict)
             
             # Invoke LLM
             response = await llm.ainvoke(formatted_prompt)
@@ -102,6 +105,9 @@ def create_sync_llm_node(
         try:
             logger.debug(f"Executing sync LLM node with output_key: {output_key}")
             
+            # Convert Pydantic state to dict if needed
+            state_dict = state.dict() if hasattr(state, "dict") else state
+            
             # Get the model
             model_manager = get_model_manager()
             llm: BaseChatModel = model_manager.get_model(model_name)
@@ -116,7 +122,7 @@ def create_sync_llm_node(
             prompt = ChatPromptTemplate.from_messages(messages)
             
             # Format with state variables
-            formatted_prompt = prompt.format_messages(**state)
+            formatted_prompt = prompt.format_messages(**state_dict)
             
             # Invoke LLM (sync)
             response = llm.invoke(formatted_prompt)
