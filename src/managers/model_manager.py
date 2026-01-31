@@ -35,7 +35,7 @@ class ModelManager:
             # Check Chat Models
             if model_name in provider_config.chat_models:
                 params = provider_config.chat_models[model_name]
-                instance = self._create_chat_model(provider_name, model_name, params)
+                instance = self._create_chat_model(provider_name, model_name, params, provider_config)
                 self._instances[model_name] = instance
                 logger.debug(f"Created and cached chat model: {model_name} (provider: {provider_name})")
                 return instance
@@ -43,7 +43,7 @@ class ModelManager:
             # Check Embedding Models
             if model_name in provider_config.embedding_models:
                 params = provider_config.embedding_models[model_name]
-                instance = self._create_embedding_model(provider_name, model_name, params)
+                instance = self._create_embedding_model(provider_name, model_name, params, provider_config)
                 self._instances[model_name] = instance
                 logger.debug(f"Created and cached embedding model: {model_name} (provider: {provider_name})")
                 return instance
@@ -51,11 +51,12 @@ class ModelManager:
         logger.error(f"Model '{model_name}' not found in configuration.")
         raise ValueError(f"Model '{model_name}' not found in configuration.")
 
-    def _resolve_api_key(self, params: BaseArgs) -> Optional[str]:
+    def _resolve_api_key(self, params: BaseArgs, provider_api_key: Optional[str] = None) -> Optional[str]:
         """
         Resolves the API key:
         1. Checks for direct 'api_key' in config.
         2. Checks for 'api_key_env_var' and loads from environment.
+        3. Checks for provider-level 'api_key'.
         """
         # 1. Direct API key
         if params.api_key:
@@ -64,18 +65,28 @@ class ModelManager:
         # 2. Key from Environment Variable
         if params.api_key_env_var:
             api_key = os.getenv(params.api_key_env_var)
-            if not api_key:
-                logger.warning(f"Environment variable '{params.api_key_env_var}' for API key is not set or empty.")
-            return api_key
+            if api_key:
+                return api_key
+            logger.warning(f"Environment variable '{params.api_key_env_var}' for API key is not set or empty.")
+            
+        # 3. Provider-level API key
+        if provider_api_key:
+            return provider_api_key
             
         return None
 
-    def _create_chat_model(self, provider: str, name: str, params: ChatModelParams) -> BaseChatModel:
+    def _create_chat_model(self, provider: str, name: str, params: ChatModelParams, provider_config: Any = None) -> BaseChatModel:
         """Factory method for Chat Models."""
+        # Use provided name as default model ID unless specified in extra-fields
+        # Since logic assumes config keys ARE the model names usually.
+        model_id = getattr(params, "model_name", name)
+        
+        provider_api_key = getattr(provider_config, "api_key", None) if provider_config else None
+
         if provider == "google":
-            api_key = self._resolve_api_key(params)
+            api_key = self._resolve_api_key(params, provider_api_key)
             return ChatGoogleGenerativeAI(
-                model=params.model_name or name, 
+                model=model_id, 
                 google_api_key=api_key,
                 temperature=params.temperature,
                 max_output_tokens=params.max_tokens,
@@ -85,7 +96,7 @@ class ModelManager:
         
         elif provider == "ollama":
             return ChatOllama(
-                model=params.model_name or name,
+                model=model_id,
                 base_url=params.base_url,
                 temperature=params.temperature,
                 top_p=params.top_p,
@@ -95,11 +106,14 @@ class ModelManager:
         else:
             raise ValueError(f"Unsupported chat model provider: {provider}")
 
-    def _create_embedding_model(self, provider: str, name: str, params: EmbeddingModelParams) -> Embeddings:
+    def _create_embedding_model(self, provider: str, name: str, params: EmbeddingModelParams, provider_config: Any = None) -> Embeddings:
         """Factory method for Embedding Models."""
+        model_id = getattr(params, "model_name", name)
+        
+        provider_api_key = getattr(provider_config, "api_key", None) if provider_config else None
+        
         if provider == "google":
-            api_key = self._resolve_api_key(params)
-            model_id = getattr(params, "model_name", name) 
+            api_key = self._resolve_api_key(params, provider_api_key)
             
             return GoogleGenerativeAIEmbeddings(
                 model=model_id,
@@ -108,7 +122,7 @@ class ModelManager:
             
         elif provider == "ollama":
             return OllamaEmbeddings(
-                model=params.model_name or name,
+                model=model_id,
                 base_url=params.base_url
             )
             

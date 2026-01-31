@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Dict, Any, Callable
 
 from langgraph.graph import StateGraph, END
-from langgraph.graph.graph import CompiledGraph
+from langgraph.graph.state import CompiledStateGraph
 
 from src.models.game_models import GameState
 from src.managers.config_manager import get_app_config
@@ -22,12 +22,29 @@ class WorkflowLoader:
     def __init__(self, config_path: str):
         self.config_path = Path(config_path)
         self.graph_config = self._load_json()
-        self._compiled_graph: CompiledGraph = None
+        self._compiled_graph: CompiledStateGraph = None
         
-        # Get nodes base path from app config and convert to module format
+        # Get nodes base path from app config
         app_config = get_app_config()
-        # Convert path format (src/nodes) to module format (src.nodes)
-        self.nodes_base_module = app_config.paths.nodes_base_path.replace("/", ".").replace("\\", ".")
+        base_path = app_config.paths.nodes_base_path
+        
+        # Ensure we have a valid python module path (e.g., src.nodes)
+        # If it looks like a file path, clean it up
+        if "\\" in base_path or "/" in base_path:
+             # If it's an absolute path containing the src directory, try to strip it
+             if "src" in base_path:
+                 parts = base_path.replace("\\", "/").split("/")
+                 try:
+                     src_index = parts.index("src")
+                     base_path = ".".join(parts[src_index:])
+                 except ValueError:
+                     # Fallback to hardcoded default if parsing fails
+                     base_path = "src.nodes"
+             else:
+                 # Relative path like src/nodes
+                 base_path = base_path.replace("/", ".").replace("\\", ".")
+                 
+        self.nodes_base_module = base_path
         
     def _load_json(self) -> Dict[str, Any]:
         """Loads the JSON configuration."""
@@ -61,7 +78,7 @@ class WorkflowLoader:
             logger.error(f"Function {function_name} not found in {module_path}: {e}")
             raise
 
-    def build_graph(self) -> CompiledGraph:
+    def build_graph(self) -> CompiledStateGraph:
         """
         Builds and compiles the StateGraph based on JSON config.
         """
@@ -100,7 +117,7 @@ class WorkflowLoader:
         logger.info("Workflow compiled successfully.")
         return self._compiled_graph
 
-    def get_graph(self) -> CompiledGraph:
+    def get_graph(self) -> CompiledStateGraph:
         """Returns the compiled graph, building it if necessary."""
         if not self._compiled_graph:
             return self.build_graph()
@@ -110,7 +127,7 @@ class WorkflowLoader:
 # Singleton-like accessor
 _loader_instance = None
 
-def get_workflow() -> CompiledGraph:
+def get_workflow() -> CompiledStateGraph:
     """Global accessor for the compiled game workflow."""
     global _loader_instance
     if _loader_instance is None:

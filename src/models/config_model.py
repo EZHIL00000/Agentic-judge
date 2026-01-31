@@ -20,6 +20,7 @@ class EmbeddingModelParams(BaseArgs):
 
 class ProviderModels(BaseModel):
     """Configuration for a specific provider's models."""
+    api_key: Optional[str] = Field(None, description="Common API key for this provider")
     chat_models: Dict[str, ChatModelParams] = Field(default_factory=dict, description="Map of chat model names to their config")
     embedding_models: Dict[str, EmbeddingModelParams] = Field(default_factory=dict, description="Map of embedding model names to their config")
 

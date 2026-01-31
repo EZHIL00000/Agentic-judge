@@ -6,7 +6,8 @@ Uses LLM to create engaging and clear explanations.
 """
 from typing import Any, Dict
 from src.nodes.llm_node import create_sync_llm_node
-from src.utils import logger, load_prompt
+from src.utils import logger
+from src.utils.prompt_loader import load_prompt
 
 
 def generate_response(state: Dict[str, Any]) -> Dict[str, Any]:
@@ -53,26 +54,32 @@ def generate_response(state: Dict[str, Any]) -> Dict[str, Any]:
         user_prompt_template = load_prompt("response_user")
         
         # Prepare context for LLM
+        # Use state_dict for accessing top-level fields, but check validity
+        # Note: We constructed llm_state specifically for the prompt
+        
+        user_move_val = state_dict.get("user_move")
+        bot_move_val = state_dict.get("bot_move")
+        
         llm_state = {
             "round_number": round_number,
-            "user_input": state.get("user_input", ""),
-            "user_move": state.get("user_move") or "None (invalid)",
-            "bot_move": state.get("bot_move", "None"),
+            "user_input": state_dict.get("user_input", ""),
+            "user_move": user_move_val if user_move_val else "None (invalid)",
+            "bot_move": bot_move_val if bot_move_val else "None",
             "validation_status": validation.get("status", "UNKNOWN"),
             "validation_reason": validation.get("reason", ""),
-            "round_result": state.get("round_result", "unknown"),
+            "round_result": state_dict.get("round_result", "unknown"),
             "user_score": user_score,
             "bot_score": bot_score,
             "is_game_over": is_game_over,
-            "user_bomb_used": state.get("user_bomb_used", False),
-            "bot_bomb_used": state.get("bot_bomb_used", False),
+            "user_bomb_used": state_dict.get("user_bomb_used", False),
+            "bot_bomb_used": state_dict.get("bot_bomb_used", False),
         }
         
         # Create and execute LLM node
         llm_node = create_sync_llm_node(
             prompt_template=user_prompt_template,
             output_key="response_raw",
-            model_name="gemini-1.5-flash",
+            model_name="gemini-2.5-flash",
             system_prompt=system_prompt,
             parse_json=False
         )
@@ -91,18 +98,18 @@ def generate_response(state: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Error in generate_response: {e}")
         # Fallback response
-        validation = state.get("validation", {})
-        round_result = state.get("round_result", "unknown")
+        validation = state_dict.get("validation", {})
+        round_result = state_dict.get("round_result", "unknown")
         
-        fallback = f"Round {state.get('round_number', '?')}: "
+        fallback = f"Round {state_dict.get('round_number', '?')}: "
         if validation.get("valid"):
-            fallback += f"You played {state.get('user_move')}, Bot played {state.get('bot_move')}. "
+            fallback += f"You played {state_dict.get('user_move')}, Bot played {state_dict.get('bot_move')}. "
             fallback += f"Result: {round_result}."
         else:
             fallback += f"{validation.get('reason', 'Invalid move.')}"
         
         return {
             "response": fallback,
-            "is_game_over": state.get("round_number", 1) >= 5,
+            "is_game_over": state_dict.get("round_number", 1) >= 5,
             "final_result": None
         }
