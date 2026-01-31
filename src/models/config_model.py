@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 
 class BaseArgs(BaseModel):
     """Base arguments common to all models."""
+    api_key: Optional[str] = Field(None, description="Direct API key for the model")
     api_key_env_var: Optional[str] = Field(None, description="Environment variable name for the API key")
     base_url: Optional[str] = Field(None, description="Base URL for local models like Ollama")
     model_config = {"extra": "allow"}  # Allow arbitrary extra parameters
