@@ -6,6 +6,7 @@ from pathlib import Path
 from pydantic import ValidationError
 from dotenv import load_dotenv
 from src.models.config_model import AppConfig
+from src.utils import logger
 
 # Load environment variables
 load_dotenv()
@@ -37,7 +38,10 @@ class ConfigManager:
         abs_config_path = Path(config_path).resolve()
         
         if not abs_config_path.exists():
+            logger.error(f"Config file not found at: {abs_config_path}")
             raise FileNotFoundError(f"Config file not found at: {abs_config_path}")
+
+        logger.info(f"Loading configuration from: {abs_config_path}")
 
         try:
             with open(abs_config_path, "r") as f:
@@ -46,12 +50,16 @@ class ConfigManager:
             # Validate against the Pydantic model
             self._config = AppConfig(**config_data)
             self._initialized = True
+            logger.debug("Configuration validated and loaded successfully.")
             
         except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in config file: {e}")
             raise ValueError(f"Invalid JSON in config file: {e}")
         except ValidationError as e:
+            logger.error(f"Config validation error: {e}")
             raise ValueError(f"Config validation error: {e}")
         except Exception as e:
+            logger.error(f"Failed to load config: {e}")
             raise Exception(f"Failed to load config: {e}")
 
     def get_config(self) -> AppConfig:

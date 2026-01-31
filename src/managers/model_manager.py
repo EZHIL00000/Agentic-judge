@@ -8,8 +8,9 @@ from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmb
 from langchain_community.chat_models import ChatOllama
 from langchain_community.embeddings import OllamaEmbeddings
 
-from src.config.config_manager import get_app_config
+from src.managers.config_manager import get_app_config
 from src.models.config_model import ChatModelParams, EmbeddingModelParams, BaseArgs
+from src.utils import logger
 
 class ModelManager:
     """
@@ -36,6 +37,7 @@ class ModelManager:
                 params = provider_config.chat_models[model_name]
                 instance = self._create_chat_model(provider_name, model_name, params)
                 self._instances[model_name] = instance
+                logger.debug(f"Created and cached chat model: {model_name} (provider: {provider_name})")
                 return instance
 
             # Check Embedding Models
@@ -43,8 +45,10 @@ class ModelManager:
                 params = provider_config.embedding_models[model_name]
                 instance = self._create_embedding_model(provider_name, model_name, params)
                 self._instances[model_name] = instance
+                logger.debug(f"Created and cached embedding model: {model_name} (provider: {provider_name})")
                 return instance
 
+        logger.error(f"Model '{model_name}' not found in configuration.")
         raise ValueError(f"Model '{model_name}' not found in configuration.")
 
     def _resolve_api_key(self, params: BaseArgs) -> Optional[str]:
@@ -61,7 +65,7 @@ class ModelManager:
         if params.api_key_env_var:
             api_key = os.getenv(params.api_key_env_var)
             if not api_key:
-                print(f"WARNING: Environment variable '{params.api_key_env_var}' for API key is not set or empty.")
+                logger.warning(f"Environment variable '{params.api_key_env_var}' for API key is not set or empty.")
             return api_key
             
         return None
