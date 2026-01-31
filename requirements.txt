@@ -29,6 +29,9 @@ aiohttp~=3.11.11
 # Templating
 Jinja2>=3.1.0
 
+# Database
+redis==5.0.1
+
 
 # Async support
 anyio==4.8.0
