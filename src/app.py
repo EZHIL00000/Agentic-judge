@@ -22,12 +22,16 @@ async def lifespan(app: FastAPI):
     # Clean up resources on shutdown if needed
     pass
 
+from src.routers import game_router
+
 app = FastAPI(
     title="Agentic Judge API",
     description="FastAPI application with LangChain and LangGraph integration",
     version="1.0.0",
     lifespan=lifespan
 )
+
+app.include_router(game_router.router)
 
 @app.get("/")
 async def root():
