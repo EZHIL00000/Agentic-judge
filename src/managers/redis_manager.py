@@ -1,13 +1,14 @@
 import json
-import os
-from typing import Optional, Any, Dict
+from typing import Optional
 from redis import Redis, ConnectionError
 from src.utils.logger import logger
 from src.models.game_models import GameState
+from src.managers.config_manager import get_app_config
 
 class RedisManager:
     """
     Manages Redis connection and game session storage.
+    Configuration is loaded from config.json.
     """
     _instance = None
     
@@ -20,11 +21,15 @@ class RedisManager:
     def __init__(self):
         if self._initialized:
             return
-            
-        redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+        
+        # Get Redis config from app config
+        config = get_app_config()
+        redis_url = config.redis.url
+        self.session_ttl = config.redis.session_ttl
+        
         try:
             self.client = Redis.from_url(redis_url, decode_responses=True)
-            self.client.ping() # Check connection
+            self.client.ping()  # Check connection
             logger.info(f"Connected to Redis at {redis_url}")
             self._initialized = True
         except ConnectionError as e:
@@ -36,12 +41,12 @@ class RedisManager:
     def save_session(self, session_id: str, state: GameState) -> None:
         """
         Save the game state to Redis (or memory fallback).
-        Expiration set to 1 hour.
+        TTL is configured in config.json.
         """
         try:
             state_json = state.json()
             if self.client:
-                self.client.setex(f"game:{session_id}", 3600, state_json)
+                self.client.setex(f"game:{session_id}", self.session_ttl, state_json)
             else:
                 self._memory_store[session_id] = state_json
             logger.debug(f"Saved session {session_id}")

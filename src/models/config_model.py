@@ -26,7 +26,13 @@ class ProviderModels(BaseModel):
 class PathConfig(BaseModel):
     """Configuration for application paths."""
     prompts_base_path: str = Field(..., description="Base path for prompt templates")
+    nodes_base_path: str = Field("src/nodes", description="Base path for workflow nodes")
     logs_path: str = Field("logs", description="Path to store logs")
+
+class RedisConfig(BaseModel):
+    """Configuration for Redis connection."""
+    url: str = Field("redis://localhost:6379/0", description="Redis connection URL")
+    session_ttl: int = Field(3600, description="Session TTL in seconds")
 
 class AppConfig(BaseModel):
     """Main application configuration."""
@@ -38,4 +44,5 @@ class AppConfig(BaseModel):
     llm_models: Dict[str, ProviderModels] = Field(..., description="Configuration grouped by provider")
     
     paths: PathConfig
+    redis: RedisConfig = Field(default_factory=RedisConfig)
     debug: bool = False

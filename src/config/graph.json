@@ -1,0 +1,36 @@
+{
+    "name": "judge_workflow",
+    "state_schema": "GameState",
+    "nodes": [
+        {
+            "node_id": "intent_node",
+            "function": "understand_intent"
+        },
+        {
+            "node_id": "logic_node",
+            "function": "evaluate_logic"
+        },
+        {
+            "node_id": "response_node",
+            "function": "generate_response"
+        }
+    ],
+    "edges": [
+        {
+            "from": "__start__",
+            "to": "intent_node"
+        },
+        {
+            "from": "intent_node",
+            "to": "logic_node"
+        },
+        {
+            "from": "logic_node",
+            "to": "response_node"
+        },
+        {
+            "from": "response_node",
+            "to": "__end__"
+        }
+    ]
+}
