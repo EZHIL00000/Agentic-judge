@@ -1,0 +1,49 @@
+{
+    "app_name": "Agentic Judge API",
+    "environment": "development",
+    "version": "0.1.0",
+    "debug": true,
+    "paths": {
+        "prompts_base_path": "src/prompts",
+        "logs_path": "logs"
+    },
+    "llm_models": {
+        "google": {
+            "chat_models": {
+                "gemini-1.5-flash": {
+                    "temperature": 0.5,
+                    "max_tokens": 1024,
+                    "api_key_env_var": "GOOGLE_API_KEY"
+                },
+                "gemini-1.5-pro": {
+                    "temperature": 0.7,
+                    "max_tokens": 2048,
+                    "api_key_env_var": "GOOGLE_API_KEY"
+                }
+            },
+            "embedding_models": {
+                "text-embedding-004": {
+                    "api_key_env_var": "GOOGLE_API_KEY",
+                    "dimensions": 768
+                }
+            }
+        },
+        "ollama": {
+            "chat_models": {
+                "mistral": {
+                    "temperature": 0.0,
+                    "base_url": "http://localhost:11434"
+                },
+                "llama3": {
+                    "temperature": 0.7,
+                    "base_url": "http://localhost:11434"
+                }
+            },
+            "embedding_models": {
+                "nomic-embed-text": {
+                    "base_url": "http://localhost:11434"
+                }
+            }
+        }
+    }
+}
