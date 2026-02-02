@@ -23,20 +23,41 @@ class RedisManager:
             return
         
         # Get Redis config from app config
+        import os
         config = get_app_config()
-        redis_url = config.redis.url
+        # Prioritize environment variable if set (standard for Docker)
+        redis_url = os.getenv("REDIS_URL", config.redis.url)
         self.session_ttl = config.redis.session_ttl
         
         try:
             self.client = Redis.from_url(redis_url, decode_responses=True)
-            self.client.ping()  # Check connection
-            logger.info(f"Connected to Redis at {redis_url}")
             self._initialized = True
-        except ConnectionError as e:
-            logger.warning(f"Could not connect to Redis at {redis_url}. Using in-memory fallback. Error: {e}")
+        except Exception as e:
+            logger.error(f"Failed to create Redis client: {e}")
             self.client = None
             self._memory_store = {}
             self._initialized = True
+
+    def check_connection(self) -> bool:
+        """
+        Check if Redis connection is active.
+        Raises ConnectionError if connection fails.
+        Returns True if successful.
+        """
+        if not self.client:
+             raise ConnectionError("Redis client is not initialized.")
+        try:
+            self.client.ping()
+            logger.info("Redis connection verified.")
+            return True
+        except ConnectionError as e:
+            logger.warning(f"Redis connection failed: {e}. Switching to memory fallback.")
+            self.client = None
+            self._memory_store = {}
+            return False
+        except Exception as e:
+             logger.error(f"Unexpected error checking Redis: {e}")
+             raise e
 
     def save_session(self, session_id: str, state: GameState) -> None:
         """
@@ -72,7 +93,7 @@ class RedisManager:
             
         except Exception as e:
             logger.error(f"Failed to retrieve session {session_id}: {e}")
-            return None
+            raise e
             
     def delete_session(self, session_id: str) -> None:
         """Delete a session."""

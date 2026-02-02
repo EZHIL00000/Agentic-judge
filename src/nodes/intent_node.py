@@ -8,6 +8,7 @@ from typing import Any, Dict
 from src.nodes.llm_node import create_sync_llm_node
 from src.utils import logger
 from src.utils.prompt_loader import load_prompt
+from src.managers.config_manager import get_app_config
 
 
 def understand_intent(state: Dict[str, Any]) -> Dict[str, Any]:
@@ -26,15 +27,20 @@ def understand_intent(state: Dict[str, Any]) -> Dict[str, Any]:
         
         logger.info(f"Understanding intent for input: {state_dict.get('user_input', '')[:50]}...")
         
+        # Get node configuration
+        
+        config = get_app_config()
+        node_config = config.nodes.intent_node
+        
         # Load prompts from Jinja2 files
-        system_prompt = load_prompt("intent_system")
-        user_prompt_template = load_prompt("intent_user")
+        system_prompt = load_prompt(node_config.system_prompt)
+        user_prompt_template = load_prompt(node_config.user_prompt)
         
         # Create the LLM node for intent parsing
         llm_node = create_sync_llm_node(
             prompt_template=user_prompt_template,
             output_key="intent_raw",
-            model_name="gemini-2.5-flash",
+            model_name=node_config.model_name,
             system_prompt=system_prompt,
             parse_json=True
         )

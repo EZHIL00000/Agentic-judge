@@ -30,6 +30,18 @@ class PathConfig(BaseModel):
     nodes_base_path: str = Field("src/nodes", description="Base path for workflow nodes")
     logs_path: str = Field("logs", description="Path to store logs")
 
+class NodeSettings(BaseModel):
+    """Configuration for a specific workflow node."""
+    model_name: str = Field(..., description="LLM model name to use")
+    system_prompt: Optional[str] = Field(None, description="System prompt filename")
+    user_prompt: Optional[str] = Field(None, description="User prompt filename")
+
+class NodesConfig(BaseModel):
+    """Configuration for all workflow nodes."""
+    intent_node: NodeSettings
+    response_node: NodeSettings
+    model_config = {"extra": "allow"}
+
 class RedisConfig(BaseModel):
     """Configuration for Redis connection."""
     url: str = Field("redis://localhost:6379/0", description="Redis connection URL")
@@ -43,6 +55,8 @@ class AppConfig(BaseModel):
     
     # New hierarchical structure: Provider -> {chat_models: {...}, embedding_models: {...}}
     llm_models: Dict[str, ProviderModels] = Field(..., description="Configuration grouped by provider")
+    
+    nodes: NodesConfig = Field(..., description="Configuration for workflow nodes")
     
     paths: PathConfig
     redis: RedisConfig = Field(default_factory=RedisConfig)

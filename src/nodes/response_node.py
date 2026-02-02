@@ -8,6 +8,7 @@ from typing import Any, Dict
 from src.nodes.llm_node import create_sync_llm_node
 from src.utils import logger
 from src.utils.prompt_loader import load_prompt
+from src.managers.config_manager import get_app_config
 
 
 def generate_response(state: Dict[str, Any]) -> Dict[str, Any]:
@@ -49,9 +50,14 @@ def generate_response(state: Dict[str, Any]) -> Dict[str, Any]:
         
         logger.info(f"Generating response for round {round_number}")
         
+        # Get node configuration
+        
+        config = get_app_config()
+        node_config = config.nodes.response_node
+
         # Load prompts from Jinja2 files
-        system_prompt = load_prompt("response_system")
-        user_prompt_template = load_prompt("response_user")
+        system_prompt = load_prompt(node_config.system_prompt)
+        user_prompt_template = load_prompt(node_config.user_prompt)
         
         # Prepare context for LLM
         # Use state_dict for accessing top-level fields, but check validity
@@ -79,7 +85,7 @@ def generate_response(state: Dict[str, Any]) -> Dict[str, Any]:
         llm_node = create_sync_llm_node(
             prompt_template=user_prompt_template,
             output_key="response_raw",
-            model_name="gemini-2.5-flash",
+            model_name=node_config.model_name,
             system_prompt=system_prompt,
             parse_json=False
         )

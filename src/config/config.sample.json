@@ -5,25 +5,40 @@
     "debug": true,
     "paths": {
         "prompts_base_path": "src/prompts",
+        "nodes_base_path": "src/nodes",
         "logs_path": "logs"
+    },
+    "redis": {
+        "url": "redis://127.0.0.1:6379/0",
+        "session_ttl": 3600
+    },
+    "nodes": {
+        "intent_node": {
+            "model_name": "gemini-2.5-flash",
+            "system_prompt": "intent_system",
+            "user_prompt": "intent_user"
+        },
+        "response_node": {
+            "model_name": "gemini-2.5-flash",
+            "system_prompt": "response_system",
+            "user_prompt": "response_user"
+        }
     },
     "llm_models": {
         "google": {
+            "api_key": "YOUR_GOOGLE_API_KEY_HERE",
             "chat_models": {
-                "gemini-1.5-flash": {
+                "gemini-2.5-flash": {
                     "temperature": 0.5,
-                    "max_tokens": 1024,
-                    "api_key_env_var": "GOOGLE_API_KEY"
+                    "max_tokens": 1024
                 },
-                "gemini-1.5-pro": {
+                "gemini-2.5-pro": {
                     "temperature": 0.7,
-                    "max_tokens": 2048,
-                    "api_key_env_var": "GOOGLE_API_KEY"
+                    "max_tokens": 2048
                 }
             },
             "embedding_models": {
                 "text-embedding-004": {
-                    "api_key_env_var": "GOOGLE_API_KEY",
                     "dimensions": 768
                 }
             }

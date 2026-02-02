@@ -30,8 +30,10 @@ class ConfigManager:
         if self._initialized:
             return
 
-        config_path = os.getenv("CONFIG_PATH")
+        config_path = os.getenv("CONFIG_PATH", "src/config/config.json")
         if not config_path:
+             # This branch is technically unreachable now with the default, 
+             # but keeping for safety if someone explicitly sets it to empty.
             raise ValueError("CONFIG_PATH environment variable is not set")
 
         # Resolve absolute path

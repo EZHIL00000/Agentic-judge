@@ -16,6 +16,20 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Failed to load configuration: {e}")
         raise e
+        
+    # Check Redis Connection
+    try: 
+        from src.managers.redis_manager import get_redis_manager
+        redis_manager = get_redis_manager()
+        is_connected = redis_manager.check_connection()
+        if is_connected:
+            logger.info("Redis connection established successfully.")
+        else:
+            logger.warning("Redis not available. Application will use in-memory storage.")
+    except Exception as e:
+        logger.error(f"Error checking Redis connection: {e}")
+        # We don't raise here to allow in-memory fallback, or raise if Strict logic required by user?
+        # User said "check whether connected". I will log clearly.
     
     yield
     
